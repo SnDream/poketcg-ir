@@ -21,4 +21,30 @@ MACRO dba
 	dw \1
 ENDM
 
+; copy from pret/poketcg
+
+MACRO ldtx
+	IF _NARG == 2
+		ld \1, \2_
+	ELSE
+		ld \1, \2_ \3
+	ENDC
+ENDM
+
+MACRO bank1call
+	rst $18
+	dw \1
+ENDM
+
+MACRO farcall
+	rst $28
+	IF _NARG == 1
+		db BANK(\1)
+		dw \1
+	ELSE
+		db \1
+		dw \2
+	ENDC
+ENDM
+
 ENDC ; MACROS_INC

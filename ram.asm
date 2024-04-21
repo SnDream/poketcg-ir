@@ -10,4 +10,4 @@ include "include/charmap_w.inc"
 wCartridgeDetect:: db
 
 	org $ffef
-hCartridgeType:: db
+hSRAMEnValue:: db

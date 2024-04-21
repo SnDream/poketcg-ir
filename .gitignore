@@ -1,0 +1,6 @@
+disassembly
+autogen
+*.o
+*.gbc
+*.sym
+*.sav

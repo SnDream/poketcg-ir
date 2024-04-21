@@ -1,0 +1,618 @@
+SUMMARY:
+	ROM0: 71 bytes used / 16313 free
+	ROMX: 1688 bytes used / 1030504 free in 63 banks
+	SRAM: 1 byte used / 8191 free in 1 bank
+	WRAM0: 14 bytes used / 4082 free
+	HRAM: 5 bytes used / 122 free
+
+ROM0 bank #0:
+	EMPTY: $0000-$006f ($0070 bytes)
+	SECTION: $0070-$00a2 ($0033 bytes) ["org_$0070"]
+	         $0070 = CartridgeDetect
+	         $0087 = CartridgeDetect.broken
+	         $0087 = CartridgeDetect.mbc
+	         $008b = CartridgeDetect.huc
+	         $0099 = SRAMWriteTest
+	EMPTY: $00a3-$0146 ($00a4 bytes)
+	SECTION: $0147 (0 bytes) ["org_$0147"]
+	EMPTY: $0147-$0161 ($001b bytes)
+	SECTION: $0162-$0165 ($0004 bytes) ["org_$0162"]
+	         $0162 = InitSetSRAMBank_Patch
+	EMPTY: $0166-$0260 ($00fb bytes)
+	SECTION: $0261 (0 bytes) ["org_$0261"]
+	         $0261 = EnableLCD
+	EMPTY: $0261-$04fc ($029c bytes)
+	SECTION: $04fd (0 bytes) ["org_$04fd"]
+	         $04fd = Reset
+	EMPTY: $04fd-$0520 ($0024 bytes)
+	SECTION: $0521 (0 bytes) ["org_$0521"]
+	         $0521 = DoFrame
+	EMPTY: $0521-$070d ($01ed bytes)
+	SECTION: $070e (0 bytes) ["org_$070e"]
+	         $070e = CopyDataHLtoDE
+	EMPTY: $070e-$077a ($006d bytes)
+	SECTION: $077b-$0782 ($0008 bytes) ["org_$077b"]
+	         $077b = oSetSRAMBank
+	EMPTY: $0783-$0786 ($0004 bytes)
+	SECTION: $0787 (0 bytes) ["org_$0787"]
+	         $0787 = EnableSRAM
+	         $0787 = oEnableSRAM
+	EMPTY: $0787-$078e ($0008 bytes)
+	SECTION: $078f-$0796 ($0008 bytes) ["org_$078f"]
+	         $078f = DisableSRAM
+	         $078f = oDisableSRAM
+	         $0790 = oDisableSRAM.entry
+	EMPTY: $0797-$2212 ($1a7c bytes)
+	SECTION: $2213 (0 bytes) ["org_$2213"]
+	         $2213 = SetupText
+	EMPTY: $2213-$2969 ($0757 bytes)
+	SECTION: $296a (0 bytes) ["org_$296a"]
+	         $296a = DrawWideTextBox_PrintText
+	EMPTY: $296a-$29bb ($0052 bytes)
+	SECTION: $29bc (0 bytes) ["org_$29bc"]
+	         $29bc = DrawWideTextBox_WaitForInput
+	EMPTY: $29bc-$29fb ($0040 bytes)
+	SECTION: $29fc (0 bytes) ["org_$29fc"]
+	         $29fc = YesOrNoMenuWithText_SetCursorToYes
+	EMPTY: $29fc-$2b8b ($0190 bytes)
+	SECTION: $2b8c (0 bytes) ["org_$2b8c"]
+	         $2b8c = PrintScrollableText_NoTextBoxLabel
+	EMPTY: $2b8c-$2da0 ($0215 bytes)
+	SECTION: $2da1 (0 bytes) ["org_$2da1"]
+	         $2da1 = LoadTxRam2
+	EMPTY: $2da1-$3669 ($08c9 bytes)
+	SECTION: $366a (0 bytes) ["org_$366a"]
+	         $366a = StopMusic
+	EMPTY: $366a-$366a ($0001 byte)
+	SECTION: $366b (0 bytes) ["org_$366b"]
+	         $366b = PlaySong
+	EMPTY: $366b-$3674 ($000a bytes)
+	SECTION: $3675 (0 bytes) ["org_$3675"]
+	         $3675 = AssertSFXFinished
+	EMPTY: $3675-$367b ($0007 bytes)
+	SECTION: $367c (0 bytes) ["org_$367c"]
+	         $367c = PlaySFX
+	EMPTY: $367c-$3680 ($0005 bytes)
+	SECTION: $3681 (0 bytes) ["org_$3681"]
+	         $3681 = PauseSong
+	EMPTY: $3681-$3685 ($0005 bytes)
+	SECTION: $3686 (0 bytes) ["org_$3686"]
+	         $3686 = ResumeSong
+	EMPTY: $3686-$3919 ($0294 bytes)
+	SECTION: $391a (0 bytes) ["org_$391a"]
+	         $391a = AddCardToCollectionAndUpdateAlbumProgress
+	EMPTY: $391a-$3d21 ($0408 bytes)
+	SECTION: $3d22 (0 bytes) ["org_$3d22"]
+	         $3d22 = LoadScene
+	EMPTY: $3d22-$3fff ($02de bytes)
+	TOTAL EMPTY: $3fb9 bytes
+
+ROMX bank #1:
+	EMPTY: $4000-$56b7 ($16b8 bytes)
+	SECTION: $56b8 (0 bytes) ["org_$56b8_1"]
+	         $56b8 = OpenCardPage_FromHand
+	EMPTY: $56b8-$5d18 ($0661 bytes)
+	SECTION: $5d19 (0 bytes) ["org_$5d19_1"]
+	         $5d19 = _DisplayCardDetailScreen
+	EMPTY: $5d19-$7354 ($163c bytes)
+	SECTION: $7355-$736d ($0019 bytes) ["org_$7355_1"]
+	         $7355 = ReceiveDeckConfiguration
+	         $735a = SendDeckConfiguration
+	         $735f = ReceiveCard
+	         $7364 = SendCard
+	         $7369 = DoCardPop
+	EMPTY: $736e-$7fff ($0c92 bytes)
+	TOTAL EMPTY: $3fe7 bytes
+
+ROMX bank #2:
+	EMPTY
+
+ROMX bank #3:
+	EMPTY
+
+ROMX bank #4:
+	EMPTY
+
+ROMX bank #5:
+	EMPTY
+
+ROMX bank #6:
+	EMPTY: $4000-$55e0 ($15e1 bytes)
+	SECTION: $55e1 (0 bytes) ["org_$55e1_6"]
+	         $55e1 = oTransmitByteThroughIR
+	EMPTY: $55e1-$5620 ($0040 bytes)
+	SECTION: $5621 (0 bytes) ["org_$5621_6"]
+	         $5621 = oReceiveByteThroughIR
+	EMPTY: $5621-$5670 ($0050 bytes)
+	SECTION: $5671 (0 bytes) ["org_$5671_6"]
+	         $5671 = oReturnZFlagUnsetAndCarryFlagSet
+	EMPTY: $5671-$56a0 ($0030 bytes)
+	SECTION: $56a1 (0 bytes) ["org_$56a1_6"]
+	         $56a1 = oFunc_19705
+	EMPTY: $56a1-$56c9 ($0029 bytes)
+	SECTION: $56ca (0 bytes) ["org_$56ca_6"]
+	         $56ca = oFunc_1971e
+	EMPTY: $56ca-$56f2 ($0029 bytes)
+	SECTION: $56f3 (0 bytes) ["org_$56f3_6"]
+	         $56f3 = oReturnZFlagUnsetAndCarryFlagSet2
+	EMPTY: $56f3-$56f5 ($0003 bytes)
+	SECTION: $56f6 (0 bytes) ["org_$56f6_6"]
+	         $56f6 = oTransmitIRDataBuffer
+	EMPTY: $56f6-$570b ($0016 bytes)
+	SECTION: $570c (0 bytes) ["org_$570c_6"]
+	         $570c = oReceiveIRDataBuffer
+	EMPTY: $570c-$5725 ($001a bytes)
+	SECTION: $5726 (0 bytes) ["org_$5726_6"]
+	         $5726 = oTransmitNBytesFromHLThroughIR
+	EMPTY: $5726-$573a ($0015 bytes)
+	SECTION: $573b (0 bytes) ["org_$573b_6"]
+	         $573b = oReceiveNBytesToHLThroughIR
+	EMPTY: $573b-$574f ($0015 bytes)
+	SECTION: $5750 (0 bytes) ["org_$5750_6"]
+	         $5750 = oStartIRCommunications
+	EMPTY: $5750-$575c ($000d bytes)
+	SECTION: $575d (0 bytes) ["org_$575d_6"]
+	         $575d = oCloseIRCommunications
+	EMPTY: $575d-$5785 ($0029 bytes)
+	SECTION: $5786 (0 bytes) ["org_$5786_6"]
+	         $5786 = oExecuteReceivedIRCommands
+	EMPTY: $5786-$57e1 ($005c bytes)
+	SECTION: $57e2 (0 bytes) ["org_$57e2_6"]
+	         $57e2 = oTrySendIRRequest
+	EMPTY: $57e2-$5804 ($0023 bytes)
+	SECTION: $5805 (0 bytes) ["org_$5805_6"]
+	         $5805 = oTryReceiveIRRequest
+	EMPTY: $5805-$5822 ($001e bytes)
+	SECTION: $5823 (0 bytes) ["org_$5823_6"]
+	         $5823 = oRequestCloseIRCommunication
+	EMPTY: $5823-$582d ($000b bytes)
+	SECTION: $582e (0 bytes) ["org_$582e_6"]
+	         $582e = oSafelyCloseIRCommunications
+	EMPTY: $582e-$5833 ($0006 bytes)
+	SECTION: $5834 (0 bytes) ["org_$5834_6"]
+	         $5834 = oRequestDataTransmissionThroughIR
+	EMPTY: $5834-$5846 ($0013 bytes)
+	SECTION: $5847 (0 bytes) ["org_$5847_6"]
+	         $5847 = oRequestDataReceivalThroughIR
+	EMPTY: $5847-$5860 ($001a bytes)
+	SECTION: $5861 (0 bytes) ["org_$5861_6"]
+	         $5861 = oTransmitRegistersThroughIR
+	EMPTY: $5861-$5874 ($0014 bytes)
+	SECTION: $5875 (0 bytes) ["org_$5875_6"]
+	         $5875 = StoreRegistersInIRDataBuffer
+	EMPTY: $5875-$588d ($0019 bytes)
+	SECTION: $588e (0 bytes) ["org_$588e_6"]
+	         $588e = LoadRegistersFromIRDataBuffer
+	EMPTY: $588e-$58a4 ($0017 bytes)
+	SECTION: $58a5 (0 bytes) ["org_$58a5_6"]
+	         $58a5 = SetSpriteAnimationsAsVBlankFunction
+	EMPTY: $58a5-$58c4 ($0020 bytes)
+	SECTION: $58c5 (0 bytes) ["org_$58c5_6"]
+	         $58c5 = RestoreVBlankFunction
+	EMPTY: $58c5-$5a0c ($0148 bytes)
+	SECTION: $5a0d (0 bytes) ["org_$5a0d_6"]
+	         $5a0d = LoadLinkConnectingScene
+	EMPTY: $5a0d-$5a20 ($0014 bytes)
+	SECTION: $5a21 (0 bytes) ["org_$5a21_6"]
+	         $5a21 = oLoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	EMPTY: $5a21-$5a39 ($0019 bytes)
+	SECTION: $5a3a (0 bytes) ["org_$5a3a_6"]
+	         $5a3a = oClearRPAndRestoreVBlankFunction
+	EMPTY: $5a3a-$5a3f ($0006 bytes)
+	SECTION: $5a40 (0 bytes) ["org_$5a40_6"]
+	         $5a40 = oInitIRCommunications
+	EMPTY: $5a40-$5a6a ($002b bytes)
+	SECTION: $5a6b (0 bytes) ["org_$5a6b_6"]
+	         $5a6b = oPrepareSendCardOrDeckConfigurationThroughIR
+	EMPTY: $5a6b-$5a8b ($0021 bytes)
+	SECTION: $5a8c (0 bytes) ["org_$5a8c_6"]
+	         $5a8c = oExchangeIRCommunicationParameters
+	EMPTY: $5a8c-$5ad0 ($0045 bytes)
+	SECTION: $5ad1 (0 bytes) ["org_$5ad1_6"]
+	         $5ad1 = oSetIRCommunicationErrorCode_NoError
+	EMPTY: $5ad1-$5ae3 ($0013 bytes)
+	SECTION: $5ae4 (0 bytes) ["org_$5ae4_6"]
+	         $5ae4 = oTryReceiveCardOrDeckConfigurationThroughIR
+	EMPTY: $5ae4-$5b04 ($0021 bytes)
+	SECTION: $5b05 (0 bytes) ["org_$5b05_6"]
+	         $5b05 = o_SendCard
+	EMPTY: $5b05-$5b3e ($003a bytes)
+	SECTION: $5b3f (0 bytes) ["org_$5b3f_6"]
+	         $5b3f = PlayCardPopSong
+	EMPTY: $5b3f-$5b43 ($0005 bytes)
+	SECTION: $5b44 (0 bytes) ["org_$5b44_6"]
+	         $5b44 = o_ReceiveCard
+	EMPTY: $5b44-$5b67 ($0024 bytes)
+	SECTION: $5b68 (0 bytes) ["org_$5b68_6"]
+	         $5b68 = o_SendDeckConfiguration
+	EMPTY: $5b68-$5b9d ($0036 bytes)
+	SECTION: $5b9e (0 bytes) ["org_$5b9e_6"]
+	         $5b9e = o_ReceiveDeckConfiguration
+	EMPTY: $5b9e-$5bc2 ($0025 bytes)
+	SECTION: $5bc3 (0 bytes) ["org_$5bc3_6"]
+	         $5bc3 = o_DoCardPop
+	EMPTY: $5bc3-$5cdc ($011a bytes)
+	SECTION: $5cdd (0 bytes) ["org_$5cdd_6"]
+	         $5cdd = oLookUpNameInCardPopNameList
+	EMPTY: $5cdd-$5d10 ($0034 bytes)
+	SECTION: $5d11 (0 bytes) ["org_$5d11_6"]
+	         $5d11 = oLookUpNameInCardPopNameList.CompareNames
+	EMPTY: $5d11-$5d1f ($000f bytes)
+	SECTION: $5d20 (0 bytes) ["org_$5d20_6"]
+	         $5d20 = DecideCardToReceiveFromCardPop
+	EMPTY: $5d20-$5d7a ($005b bytes)
+	SECTION: $5d7b (0 bytes) ["org_$5d7b_6"]
+	         $5d7b = CreateCardPopCandidateList
+	EMPTY: $5d7b-$5db5 ($003b bytes)
+	SECTION: $5db6 (0 bytes) ["org_$5db6_6"]
+	         $5db6 = CalculateNameHash
+	EMPTY: $5db6-$6632 ($087d bytes)
+	SECTION: $6633 (0 bytes) ["org_$6633_$06"]
+	         $6633 = oUnusedSaveDataValidation
+	EMPTY: $6633-$668b ($0059 bytes)
+	SECTION: $668c (0 bytes) ["org_$668c_$06"]
+	         $668c = oUnusedSaveDataValidation.entry
+	EMPTY: $668c-$77bf ($1134 bytes)
+	SECTION: $77c0-$7e3e ($067f bytes) ["org_$77c0_6"]
+	         $77c0 = Func_19674
+	         $77c8 = Func_19674.loop_delay_1
+	         $77d1 = Func_19674.loop_delay_2
+	         $77d5 = Func_19674.delay_once
+	         $77d9 = Func_19674.loop_delay_3
+	         $77de = TransmitByteThroughIR
+	         $77f1 = TransmitByteThroughIR.loop
+	         $7806 = ReceiveByteThroughIR_ZeroIfUnsuccessful
+	         $780c = ReceiveByteThroughIR
+	         $7814 = ReceiveByteThroughIR.wait_ir
+	         $7822 = ReceiveByteThroughIR.ok
+	         $7824 = ReceiveByteThroughIR.loop_delay
+	         $7829 = ReceiveByteThroughIR.loop
+	         $7838 = ReceiveByteThroughIR.asm_196ec
+	         $783d = ReceiveByteThroughIR.asm_196f1
+	         $784c = ReturnZFlagUnsetAndCarryFlagSet
+	         $7851 = Func_19705
+	         $7854 = Func_19705.asm_19708
+	         $786a = Func_1971e
+	         $786d = Func_1971e.asm_19721
+	         $7881 = ReturnZFlagUnsetAndCarryFlagSet2
+	         $7884 = TransmitIRDataBuffer
+	         $789a = ReceiveIRDataBuffer
+	         $78b4 = TransmitNBytesFromHLThroughIR
+	         $78b6 = TransmitNBytesFromHLThroughIR.loop_data_bytes
+	         $78c8 = TransmitNBytesFromHLThroughIR.asm_1977c
+	         $78c9 = ReceiveNBytesToHLThroughIR
+	         $78cb = ReceiveNBytesToHLThroughIR.loop_data_bytes
+	         $78de = StartIRCommunications
+	         $78e8 = CloseIRCommunications
+	         $78ec = CloseIRCommunications.wait_vblank_on
+	         $78f4 = CloseIRCommunications.wait_vblank_off
+	         $78fe = ClearRP
+	         $7903 = ExecuteReceivedIRCommands
+	         $7906 = ExecuteReceivedIRCommands.loop_commands
+	         $791d = ExecuteReceivedIRCommands.error
+	         $7923 = ExecuteReceivedIRCommands.JumpToCmdPointer
+	         $792d = ExecuteReceivedIRCommands.jp_hl
+	         $792e = ExecuteReceivedIRCommands.CmdPointerTable
+	         $7938 = ExecuteReceivedIRCommands.Close
+	         $793e = ExecuteReceivedIRCommands.ReturnWithoutClosing
+	         $7940 = ExecuteReceivedIRCommands.TransmitData
+	         $794a = ExecuteReceivedIRCommands.ReceiveData
+	         $7958 = ExecuteReceivedIRCommands.asm_19812
+	         $7959 = ExecuteReceivedIRCommands.CallFunction
+	         $7963 = TrySendIRRequest
+	         $796b = TrySendIRRequest.send_request
+	         $7981 = TrySendIRRequest.received_ack
+	         $7982 = TrySendIRRequest.close
+	         $7988 = TryReceiveIRRequest
+	         $798e = TryReceiveIRRequest.wait_request
+	         $799f = TryReceiveIRRequest.send_ack
+	         $79a5 = TryReceiveIRRequest.close
+	         $79ab = RequestCloseIRCommunication
+	         $79b6 = SafelyCloseIRCommunications
+	         $79bc = RequestDataTransmissionThroughIR
+	         $79cf = RequestDataReceivalThroughIR
+	         $79e4 = RequestDataReceivalThroughIR.asm_1989e
+	         $79e9 = TransmitRegistersThroughIR
+	         $79fd = LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	         $7a16 = ClearRPAndRestoreVBlankFunction
+	         $7a1f = InitIRCommunications
+	         $7a49 = InitIRCommunications.loop
+	         $7a53 = PrepareSendCardOrDeckConfigurationThroughIR
+	         $7a56 = PrepareSendCardOrDeckConfigurationThroughIR.loop_frame
+	         $7a70 = PrepareSendCardOrDeckConfigurationThroughIR.b_btn
+	         $7a74 = PrepareSendCardOrDeckConfigurationThroughIR.request_success
+	         $7a81 = ExchangeIRCommunicationParameters
+	         $7ac0 = ExchangeIRCommunicationParameters.error
+	         $7ac3 = SetIRCommunicationErrorCode_Error
+	         $7ad7 = SetIRCommunicationErrorCode_NoError
+	         $7aea = TryReceiveCardOrDeckConfigurationThroughIR
+	         $7aed = TryReceiveCardOrDeckConfigurationThroughIR.loop_receive_request
+	         $7afc = TryReceiveCardOrDeckConfigurationThroughIR.receive_data
+	         $7b07 = TryReceiveCardOrDeckConfigurationThroughIR.cancelled
+	         $7b0b = _SendCard
+	         $7b44 = _SendCard.fail
+	         $7b51 = PlayCardPopSong
+	         $7b56 = _ReceiveCard
+	         $7b82 = _ReceiveCard.fail
+	         $7b8f = _SendDeckConfiguration
+	         $7bb8 = _SendDeckConfiguration.fail
+	         $7bc5 = _ReceiveDeckConfiguration
+	         $7bdd = _ReceiveDeckConfiguration.fail
+	         $7bea = _DoCardPop
+	         $7c46 = _DoCardPop.wait_sfx
+	         $7c65 = _DoCardPop.error
+	         $7c7c = HandleCardPopCommunications
+	         $7c93 = HandleCardPopCommunications.loop_request
+	         $7ccf = HandleCardPopCommunications.execute_commands
+	         $7cdd = HandleCardPopCommunications.check_search_result
+	         $7ce8 = HandleCardPopCommunications.success
+	         $7d03 = HandleCardPopCommunications.loop_write_name
+	         $7d0e = HandleCardPopCommunications.fail
+	         $7d13 = LookUpNameInCardPopNameList
+	         $7d18 = LookUpNameInCardPopNameList.loop_own_card_pop_name_list
+	         $7d31 = LookUpNameInCardPopNameList.loop_other_card_pop_name_list
+	         $7d43 = LookUpNameInCardPopNameList.found_name
+	         $7d46 = LookUpNameInCardPopNameList.no_carry
+	         $7d4d = IRHwisMissing
+	         $7d79 = n_SendCard
+	         $7d8d = n_ReceiveCard
+	         $7da1 = n_SendDeckConfiguration
+	         $7db5 = n_ReceiveDeckConfiguration
+	         $7dc9 = n_DoCardPop
+	         $7e03 = Prepare_IRHwisMissingText
+	         $7e0d = Prepare_IRHwisMissingText.loop
+	         $7e19 = IRHwisMissingText
+	         $7e3f = IRHwisMissingText.end
+	EMPTY: $7e3f-$7fff ($01c1 bytes)
+	TOTAL EMPTY: $3981 bytes
+
+ROMX bank #7:
+	EMPTY
+
+ROMX bank #8:
+	EMPTY
+
+ROMX bank #9:
+	EMPTY
+
+ROMX bank #10:
+	EMPTY
+
+ROMX bank #11:
+	EMPTY
+
+ROMX bank #12:
+	EMPTY
+
+ROMX bank #13:
+	EMPTY
+
+ROMX bank #14:
+	EMPTY
+
+ROMX bank #15:
+	EMPTY
+
+ROMX bank #16:
+	EMPTY
+
+ROMX bank #17:
+	EMPTY
+
+ROMX bank #18:
+	EMPTY
+
+ROMX bank #19:
+	EMPTY
+
+ROMX bank #20:
+	EMPTY
+
+ROMX bank #21:
+	EMPTY
+
+ROMX bank #22:
+	EMPTY
+
+ROMX bank #23:
+	EMPTY
+
+ROMX bank #24:
+	EMPTY
+
+ROMX bank #25:
+	EMPTY
+
+ROMX bank #26:
+	EMPTY
+
+ROMX bank #27:
+	EMPTY
+
+ROMX bank #28:
+	EMPTY
+
+ROMX bank #29:
+	EMPTY
+
+ROMX bank #30:
+	EMPTY
+
+ROMX bank #31:
+	EMPTY
+
+ROMX bank #32:
+	EMPTY
+
+ROMX bank #33:
+	EMPTY
+
+ROMX bank #34:
+	EMPTY
+
+ROMX bank #35:
+	EMPTY
+
+ROMX bank #36:
+	EMPTY
+
+ROMX bank #37:
+	EMPTY
+
+ROMX bank #38:
+	EMPTY
+
+ROMX bank #39:
+	EMPTY
+
+ROMX bank #40:
+	EMPTY
+
+ROMX bank #41:
+	EMPTY
+
+ROMX bank #42:
+	EMPTY
+
+ROMX bank #43:
+	EMPTY
+
+ROMX bank #44:
+	EMPTY
+
+ROMX bank #45:
+	EMPTY
+
+ROMX bank #46:
+	EMPTY
+
+ROMX bank #47:
+	EMPTY
+
+ROMX bank #48:
+	EMPTY
+
+ROMX bank #49:
+	EMPTY
+
+ROMX bank #50:
+	EMPTY
+
+ROMX bank #51:
+	EMPTY
+
+ROMX bank #52:
+	EMPTY
+
+ROMX bank #53:
+	EMPTY
+
+ROMX bank #54:
+	EMPTY
+
+ROMX bank #55:
+	EMPTY
+
+ROMX bank #56:
+	EMPTY
+
+ROMX bank #57:
+	EMPTY
+
+ROMX bank #58:
+	EMPTY
+
+ROMX bank #59:
+	EMPTY
+
+ROMX bank #60:
+	EMPTY
+
+ROMX bank #61:
+	EMPTY
+
+ROMX bank #62:
+	EMPTY
+
+ROMX bank #63:
+	EMPTY
+
+SRAM bank #0:
+	EMPTY: $a000-$a004 ($0005 bytes)
+	SECTION: $a005 (0 bytes) ["org_$a005"]
+	         $a005 = sTotalCardPopsDone
+	EMPTY: $a005-$a00f ($000b bytes)
+	SECTION: $a010 (0 bytes) ["org_$a010"]
+	         $a010 = sPlayerName
+	EMPTY: $a010-$baff ($1af0 bytes)
+	SECTION: $bb00 (0 bytes) ["org_$bb00"]
+	         $bb00 = sCardPopNameList
+	EMPTY: $bb00-$bffe ($04ff bytes)
+	SECTION: $bfff-$bfff ($0001 byte) ["org_$bfff"]
+	         $bfff = wCartridgeDetect
+	TOTAL EMPTY: $1fff bytes
+
+WRAM0 bank #0:
+	EMPTY: $c000-$c0ff ($0100 bytes)
+	SECTION: $c100 (0 bytes) ["org_$c100"]
+	         $c100 = wCardPopNameList
+	EMPTY: $c100-$c1ff ($0100 bytes)
+	SECTION: $c200 (0 bytes) ["org_$c200"]
+	         $c200 = wOtherPlayerCardPopNameList
+	         $c200 = wPlayerDuelVariables
+	EMPTY: $c200-$c8af ($06b0 bytes)
+	SECTION: $c8b0 (0 bytes) ["org_$c8b0"]
+	         $c8b0 = wDefaultText
+	EMPTY: $c8b0-$c8f3 ($0044 bytes)
+	SECTION: $c8f4-$c8f4 ($0001 byte) ["org_$c8f4"]
+	         $c8f4 = wConsole
+	EMPTY: $c8f5-$cb45 ($0251 bytes)
+	SECTION: $cb46 (0 bytes) ["org_$cb46"]
+	         $cb46 = wOpponentName
+	EMPTY: $cb46-$cb4a ($0005 bytes)
+	SECTION: $cb4b (0 bytes) ["org_$cb4b"]
+	         $cb4b = wNameBuffer
+	EMPTY: $cb4b-$cb5a ($0010 bytes)
+	SECTION: $cb5b (0 bytes) ["org_$cb5b"]
+	         $cb5b = wDuelTempList
+	EMPTY: $cb5b-$cbde ($0084 bytes)
+	SECTION: $cbdf (0 bytes) ["org_$cbdf"]
+	         $cbdf = wLoadedCard1Name
+	EMPTY: $cbdf-$cbe2 ($0004 bytes)
+	SECTION: $cbe3 (0 bytes) ["org_$cbe3"]
+	         $cbe3 = wLoadedCard1ID
+	EMPTY: $cbe3-$ce21 ($023f bytes)
+	SECTION: $ce22-$ce29 ($0008 bytes) ["org_$ce22"]
+	         $ce22 = wIRDataBuffer
+	EMPTY: $ce2a-$ce36 ($000d bytes)
+	SECTION: $ce37-$ce37 ($0001 byte) ["org_$ce37"]
+	         $ce37 = wIRCommunicationErrorCode
+	SECTION: $ce38-$ce3b ($0004 bytes) ["org_$ce38"]
+	         $ce38 = wOwnIRCommunicationParams
+	SECTION: $ce3b (0 bytes) ["org_$ce3b"]
+	         $ce3b = wOtherIRCommunicationParams
+	EMPTY: $ce3b-$ce3f ($0005 bytes)
+	SECTION: $ce40 (0 bytes) ["org_$ce40"]
+	         $ce40 = wCardPopNameSearchResult
+	EMPTY: $ce40-$ce45 ($0006 bytes)
+	SECTION: $ce46 (0 bytes) ["org_$ce46"]
+	         $ce46 = wCardPopCardObtainSong
+	EMPTY: $ce46-$cfff ($01ba bytes)
+	TOTAL EMPTY: $0ff2 bytes
+
+HRAM bank #0:
+	EMPTY: $ff80-$ff80 ($0001 byte)
+	SECTION: $ff81-$ff81 ($0001 byte) ["org_$ff81"]
+	         $ff81 = ohSRAMBank
+	EMPTY: $ff82-$ff8f ($000e bytes)
+	SECTION: $ff90-$ff91 ($0002 bytes) ["org_$ff90"]
+	         $ff90 = hKeysHeld
+	         $ff91 = hKeysPressed
+	EMPTY: $ff92-$ff96 ($0005 bytes)
+	SECTION: $ff97-$ff97 ($0001 byte) ["org_$ff97"]
+	         $ff97 = hWhoseTurn
+	EMPTY: $ff98-$ffee ($0057 bytes)
+	SECTION: $ffef-$ffef ($0001 byte) ["org_$ffef"]
+	         $ffef = hSRAMEnValue
+	EMPTY: $fff0-$fffe ($000f bytes)
+	TOTAL EMPTY: $007a bytes

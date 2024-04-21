@@ -3,6 +3,7 @@ include "include/overlay.inc"
 include "include/macros.inc"
 include "include/constants.inc"
 include "include/charmap_w.inc"
+include "include/charmap.inc"
 
 ; hardware.inc包含各种硬件和寄存器的定义，建议使用里面的方式标注寄存器或者硬件参数
 ; overlay.inc包含org（代码定位）的用法和cleartill的用法
@@ -12,50 +13,43 @@ include "include/charmap_w.inc"
 
 ; 可以往后继续编写补丁代码
 
-MACRO farcall
-	rst $28
-	IF _NARG == 1
-		db BANK(\1)
-		dw \1
-	ELSE
-		db \1
-		dw \2
-	ENDC
-ENDM
-
 ; MBC Type in ROM
-	; org $0147
+	org $0147
 	; db CART_ROM_MBC3_RAM_BAT
 
-	org $0061
+;        | 0x0 | 0xA | 0xE |
+;--------+-----+-----+-----+
+; HUC1   | RW  | RW  | IR  |
+; MBCx   | XX  | RW  | XX  |
+; BROKEN | RW  | RW  | RW  |
+; BGB?   | RO? | RW  | RO? |
+
+	org $0070
 CartridgeDetect::
 	push hl
 	ld hl, wCartridgeDetect
+	ld a, CART_IR_ENABLE
+	ld [rRAMG], a
+	call SRAMWriteTest
+	jr z, .broken
 	xor a
 	ld [rRAMG], a
 	call SRAMWriteTest
-	jr z, .huc_or_brokenmbc
-	ld a, CART_SRAM_ENABLE
-	ld [rRAMG], a
-	call SRAMWriteTest
-	jr nz, .huc
+	jr z, .huc
+.broken
 .mbc
-	ld a, CART_TYPE_MBC
-	ldh [hCartridgeType], a
+	ld a, CART_SRAM_ENABLE
+	ldh [hSRAMEnValue], a
 .huc
+	ld a, CART_SRAM_ENABLE ; 对所有情况适用
+	ld [rRAMG], a
 	xor a
 	ld [hl], a
 	ld [rRAMG], a
 	pop hl
+	
+	; xor a
 	jp oSetSRAMBank
-.huc_or_brokenmbc
-	ld a, CART_IR_ENABLE
-	ld [rRAMG], a
-	call SRAMWriteTest
-	jr z, .mbc
-	xor a
-	ld [_SRAM], a
-	jr .huc
 
 SRAMWriteTest::
 	ld a, CART_DETECT_0
@@ -81,33 +75,28 @@ oSetSRAMBank::
 	; ld [rRAMG], a
 	; pop af
 	; ret
+
 	push af
 	ldh [ohSRAMBank], a
 	ld [rRAMB], a
-	ldh a, [hCartridgeType]
-	jr oEnableSRAM.entry2
-IF 0
-	push af
-	ldh [ohSRAMBank], a
-	ld [rRAMB], a
-	jr oEnableSRAM.entry
-	nop
-	nop
-	pop af
-	ret
-ENDC
+	jr oDisableSRAM.entry ; 实际上做En，见下面说明
 
 	org $0787
+EnableSRAM::
 oEnableSRAM::
-	push af
-.entry
-	ld a, CART_SRAM_ENABLE
-.entry2
-	ld [rRAMG], a
-	pop af
-	ret
-	
+; 	push af
+; .entry
+; 	ld a, CART_SRAM_ENABLE
+; .entry2
+; 	ld [rRAMG], a
+; 	pop af
+; 	ret
+
 	org $078f
+; 对于HUC1，保持原有的写0的方式（理论上没用）
+; 对于MBCx，关闭也是打开，否则运行异常
+; 因此还是取hSRAMEnValue
+DisableSRAM::
 oDisableSRAM::
 	; push af
 	; farcall oDisableSRAMEmpty
@@ -116,23 +105,14 @@ oDisableSRAM::
 	; pop af
 	; ret
 	push af
-	farcall oDisableSRAMEmpty
 .entry
-	xor a
+	ldh a, [hSRAMEnValue]
+	; xor a
 	ld [rRAMG], a
 	pop af
 	ret
 
 IF 0
-	push af
-	farcall oDisableSRAMEmpty
-	jr oEnableSRAM.entry
-	nop
-	nop
-	pop af
-	ret
-ENDC
-
 	org $66a0, $06
 oDisableSRAMEmpty::
 	ret
@@ -158,6 +138,7 @@ oEnableIR::
 	ld [rRAMG], a
 	pop af
 	ret
+ENDC
 
 	org $6633, $06
 oUnusedSaveDataValidation::
@@ -171,7 +152,7 @@ oUnusedSaveDataValidation.entry
 	; ld [rRAMB], a
 	; ld [_SRAM], a
 	; ld [rRAMG], a
-	; jp oReset
+	; jp Reset
 IF 0
 	ld a, CART_SRAM_ENABLE
 	ld [rRAMG], a
@@ -182,73 +163,16 @@ IF 0
 	nop
 	nop
 	nop
-	jp oReset
+	jp Reset
 ENDC
 
-	org $04fd
-oReset::
+; 	org $5a3a, 6
+; oClearRPAndRestoreVBlankFunction::
+; 	jp nClearRPAndRestoreVBlankFunction
+
+; copy from pret/poketcg
 
 	org $77c0, 6
-; setup timer to 16384/68 ≈ 240.94 Hz
-SetupTimer::
-	ld b, -68 ; Value for Normal Speed
-	call CheckForCGB
-	jr c, .set_timer
-	ldh a, [rKEY1]
-	and $80
-	jr z, .set_timer
-	ld b, $100 - 2 * 68 ; Value for CGB Double Speed
-.set_timer
-	ld a, b
-	ldh [rTMA], a
-	ld a, TAC_16384_HZ
-	ldh [rTAC], a
-	ld a, TAC_START | TAC_16384_HZ
-	ldh [rTAC], a
-	ret
-
-CheckForCGB::
-	ld a, [wConsole]
-	cp CONSOLE_CGB
-	ret z
-	scf
-	ret
-
-; switch to CGB Normal Speed Mode if playing on CGB and current mode is Double Speed Mode
-SwitchToCGBNormalSpeed::
-	call CheckForCGB
-	ret c
-	ld hl, rKEY1
-	bit 7, [hl]
-	ret z
-	jr CGBSpeedSwitch
-
-; switch to CGB Double Speed Mode if playing on CGB and current mode is Normal Speed Mode
-SwitchToCGBDoubleSpeed::
-	call CheckForCGB
-	ret c
-	ld hl, rKEY1
-	bit 7, [hl]
-	ret nz
-;	fallthrough
-
-; switch between CGB Double Speed Mode and Normal Speed Mode
-CGBSpeedSwitch::
-	ldh a, [rIE]
-	push af
-	xor a
-	ldh [rIE], a
-	set 0, [hl]
-	xor a
-	ldh [rIF], a
-	ldh [rIE], a
-	ld a, $30
-	ldh [rJOYP], a
-	stop
-	call SetupTimer
-	pop af
-	ldh [rIE], a
-	ret
 
 ; if carry flag is set, only delays
 ; if carry not set:
@@ -493,7 +417,7 @@ ReceiveNBytesToHLThroughIR:
 ; switches to CGB normal speed
 StartIRCommunications:
 	di
-	call SwitchToCGBNormalSpeed
+	; call SwitchToCGBNormalSpeed
 	ld a, P14
 	ldh [rJOYP], a
 	ld a, $c0
@@ -514,7 +438,7 @@ CloseIRCommunications:
 	and STAT_LCDC_STATUS
 	cp STAT_ON_VBLANK
 	jr nz, .wait_vblank_off
-	call SwitchToCGBDoubleSpeed
+	; call SwitchToCGBDoubleSpeed
 	ei
 	ret
 
@@ -731,53 +655,662 @@ TransmitRegistersThroughIR:
 	inc sp
 	jr SafelyCloseIRCommunications
 
-; stores af, hl, de and bc in wIRDataBuffer
-StoreRegistersInIRDataBuffer:
-	push de
+; ir_functions
+
+; ; hl = text ID
+; LoadLinkConnectingScene:
+; 	push hl
+; 	call SetSpriteAnimationsAsVBlankFunction
+; 	ld a, SCENE_GAMEBOY_LINK_CONNECTING
+; 	lb bc, 0, 0
+; 	call LoadScene
+; 	pop hl
+; 	call DrawWideTextBox_PrintText
+; 	call EnableLCD
+; 	ret
+
+; shows Link Not Connected scene
+; then asks the player whether they want to try again
+; if the player selects "no", return carry
+; input:
+;  - hl = text ID
+LoadLinkNotConnectedSceneAndAskWhetherToTryAgain:
 	push hl
+	call RestoreVBlankFunction
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_GAMEBOY_LINK_NOT_CONNECTED
+	lb bc, 0, 0
+	call LoadScene
+	pop hl
+	call DrawWideTextBox_WaitForInput
+	ld hl, $0197 ; ldtx hl, WouldYouLikeToTryAgainText
+	call YesOrNoMenuWithText_SetCursorToYes
+;	fallthrough
+
+ClearRPAndRestoreVBlankFunction:
 	push af
-	ld hl, wIRDataBuffer
-	pop de
-	ld [hl], e ; <- f
-	inc hl
-	ld [hl], d ; <- a
-	inc hl
-	pop de
-	ld [hl], e ; <- l
-	inc hl
-	ld [hl], d ; <- h
-	inc hl
-	pop de
-	ld [hl], e ; <- e
-	inc hl
-	ld [hl], d ; <- d
-	inc hl
-	ld [hl], c ; <- c
-	inc hl
-	ld [hl], b ; <- b
+	call ClearRP
+	call RestoreVBlankFunction
+	pop af
 	ret
 
-; loads all the registers that were stored
-; from StoreRegistersInIRDataBuffer
-LoadRegistersFromIRDataBuffer:
-	ld hl, wIRDataBuffer
-	ld e, [hl]
+; prepares IR communication parameter data
+; a = a IRPARAM_* constant for the function of this connection
+InitIRCommunications:
+	ld hl, wOwnIRCommunicationParams
+	ld [hl], a
 	inc hl
-	ld d, [hl]
+	ld [hl], $50
 	inc hl
-	push de
-	ld e, [hl]
+	ld [hl], $4b
 	inc hl
-	ld d, [hl]
-	inc hl
-	push de
-	ld e, [hl]
-	inc hl
-	ld d, [hl]
-	inc hl
-	ld c, [hl]
-	inc hl
-	ld b, [hl]
+	ld [hl], $31
+	ld a, $ff
+	ld [wIRCommunicationErrorCode], a
+	ld a, PLAYER_TURN
+	ldh [hWhoseTurn], a
+; clear wNameBuffer and wOpponentName
+	xor a
+	ld [wNameBuffer], a
+	ld hl, wOpponentName
+	ld [hli], a
+	ld [hl], a
+; loads player's name from SRAM
+; to wDefaultText
+	call oEnableSRAM
+	ld hl, sPlayerName
+	ld de, wDefaultText
+	ld c, NAME_BUFFER_LENGTH
+.loop
+	ld a, [hli]
+	ld [de], a
+	inc de
+	dec c
+	jr nz, .loop
+	call oDisableSRAM
+	ret
+
+; returns carry if communication was unsuccessful
+; if a = 0, then it was a communication error
+; if a = 1, then operation was cancelled by the player
+PrepareSendCardOrDeckConfigurationThroughIR:
+	call InitIRCommunications
+
+; pressing A button triggers request for IR communication
+.loop_frame
+	call DoFrame
+	ldh a, [hKeysPressed]
+	bit B_BUTTON_F, a
+	jr nz, .b_btn
+	ldh a, [hKeysHeld]
+	bit A_BUTTON_F, a
+	jr z, .loop_frame
+; a btn
+	call TrySendIRRequest
+	jr nc, .request_success
+	or a
+	jr z, .loop_frame
+	xor a
+	scf
+	ret
+
+.b_btn
+	; cancelled by the player
+	ld a, $01
+	scf
+	ret
+
+.request_success
+	call ExchangeIRCommunicationParameters
+	ret c
+	ld a, [wOtherIRCommunicationParams + 3]
+	cp $31
+	jr nz, SetIRCommunicationErrorCode_Error
+	or a
+	ret
+
+; exchanges player names and IR communication parameters
+; checks whether parameters for communication match
+; and if they don't, an error is issued
+ExchangeIRCommunicationParameters:
+	ld hl, wOwnIRCommunicationParams
+	ld de, wOtherIRCommunicationParams
+	ld c, 4
+	call RequestDataTransmissionThroughIR
+	jr c, .error
+	ld hl, wOtherIRCommunicationParams + 1
+	ld a, [hli]
+	cp $50
+	jr nz, .error
+	ld a, [hli]
+	cp $4b
+	jr nz, .error
+	ld a, [wOwnIRCommunicationParams]
+	ld hl, wOtherIRCommunicationParams
+	cp [hl] ; do parameters match?
+	jr nz, SetIRCommunicationErrorCode_Error
+
+; receives wDefaultText from other device
+; and writes it to wNameBuffer
+	ld hl, wDefaultText
+	ld de, wNameBuffer
+	ld c, NAME_BUFFER_LENGTH
+	call RequestDataTransmissionThroughIR
+	jr c, .error
+; transmits wDefaultText to be
+; written in wNameBuffer in the other device
+	ld hl, wDefaultText
+	ld de, wNameBuffer
+	ld c, NAME_BUFFER_LENGTH
+	call RequestDataReceivalThroughIR
+	jr c, .error
+	or a
+	ret
+
+.error
+	xor a
+	scf
+	ret
+
+SetIRCommunicationErrorCode_Error:
+	ld hl, wIRCommunicationErrorCode
+	ld [hl], $01
+	ld de, wIRCommunicationErrorCode
+	ld c, 1
+	call RequestDataReceivalThroughIR
+	call RequestCloseIRCommunication
+	ld a, $01
+	scf
+	ret
+
+SetIRCommunicationErrorCode_NoError:
+	ld hl, wOwnIRCommunicationParams
+	ld [hl], $00
+	ld de, wIRCommunicationErrorCode
+	ld c, 1
+	call RequestDataReceivalThroughIR
+	ret c
+	call RequestCloseIRCommunication
+	or a
+	ret
+
+; makes device receptive to receive data from other device
+; to write in wDuelTempList (either list of cards or a deck configuration)
+; returns carry if some error occurred
+TryReceiveCardOrDeckConfigurationThroughIR:
+	call InitIRCommunications
+.loop_receive_request
+	xor a
+	ld [wDuelTempList], a
+	call TryReceiveIRRequest
+	jr nc, .receive_data
+	bit 1, a
+	jr nz, .cancelled
+	jr .loop_receive_request
+.receive_data
+	call ExecuteReceivedIRCommands
+	ld a, [wIRCommunicationErrorCode]
+	or a
+	ret z ; no error
+	xor a
+	scf
+	ret
+
+.cancelled
+	ld a, $01
+	scf
+	ret
+
+; returns carry if card(s) wasn't successfully sent
+_SendCard:
+	call StopMusic
+	ld hl, $019a ; ldtx hl, SendingACardText
+	call LoadLinkConnectingScene
+	ld a, IRPARAM_SEND_CARDS
+	call PrepareSendCardOrDeckConfigurationThroughIR
+	jr c, .fail
+
+	; send cards
+	xor a
+	ld [wDuelTempList + DECK_SIZE], a
+	ld hl, wDuelTempList
+	ld e, l
+	ld d, h
+	ld c, DECK_SIZE + 1
+	call RequestDataReceivalThroughIR
+	jr c, .fail
+	call SetIRCommunicationErrorCode_NoError
+	jr c, .fail
+	call ExecuteReceivedIRCommands
+	jr c, .fail
+	ld a, [wOwnIRCommunicationParams + 1]
+	cp $4f
+	jr nz, .fail
+	call PlayCardPopSong
+	xor a
+	call ClearRPAndRestoreVBlankFunction
+	ret
+
+.fail
+	call PlayCardPopSong
+	ld hl, $019e ; ldtx hl, CardTransferWasntSuccessful1Text
+	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	jr nc, _SendCard ; loop back and try again
+	; failed
+	scf
+	ret
+
+PlayCardPopSong:
+	ld a, MUSIC_CARD_POP
+	jp PlaySong
+
+_ReceiveCard:
+	call StopMusic
+	ld hl, $019b ; ldtx hl, ReceivingACardText
+	call LoadLinkConnectingScene
+	ld a, IRPARAM_SEND_CARDS
+	call TryReceiveCardOrDeckConfigurationThroughIR
+	ld a, $4f
+	ld [wOwnIRCommunicationParams + 1], a
+	ld hl, wOwnIRCommunicationParams
+	ld e, l
+	ld d, h
+	ld c, 4
+	call RequestDataReceivalThroughIR
+	jr c, .fail
+	call RequestCloseIRCommunication
+	jr c, .fail
+	call PlayCardPopSong
+	or a
+	call ClearRPAndRestoreVBlankFunction
+	ret
+
+.fail
+	call PlayCardPopSong
+	ld hl, $019f ; ldtx hl, CardTransferWasntSuccessful2Text
+	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	jr nc, _ReceiveCard
+	scf
+	ret
+
+_SendDeckConfiguration:
+	call StopMusic
+	ld hl, $019c; ldtx hl, SendingADeckConfigurationText
+	call LoadLinkConnectingScene
+	ld a, IRPARAM_SEND_DECK
+	call PrepareSendCardOrDeckConfigurationThroughIR
+	jr c, .fail
+	ld hl, wDuelTempList
+	ld e, l
+	ld d, h
+	ld c, DECK_STRUCT_SIZE
+	call RequestDataReceivalThroughIR
+	jr c, .fail
+	call SetIRCommunicationErrorCode_NoError
+	jr c, .fail
+	call PlayCardPopSong
+	call ClearRPAndRestoreVBlankFunction
+	or a
+	ret
+
+.fail
+	call PlayCardPopSong
+	ld hl, $01a0 ; ldtx hl, DeckConfigurationTransferWasntSuccessful1Text
+	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	jr nc, _SendDeckConfiguration
+	scf
+	ret
+
+_ReceiveDeckConfiguration:
+	call StopMusic
+	ld hl, $019d ; ldtx hl, ReceivingDeckConfigurationText
+	call LoadLinkConnectingScene
+	ld a, IRPARAM_SEND_DECK
+	call TryReceiveCardOrDeckConfigurationThroughIR
+	jr c, .fail
+	call PlayCardPopSong
+	call ClearRPAndRestoreVBlankFunction
+	or a
+	ret
+
+.fail
+	call PlayCardPopSong
+	ld hl, $01a1 ; ldtx hl, DeckConfigurationTransferWasntSuccessful2Text
+	call LoadLinkNotConnectedSceneAndAskWhetherToTryAgain
+	jr nc, _ReceiveDeckConfiguration ; loop back and try again
+	scf
+	ret
+
+_DoCardPop:
+; loads scene for Card Pop! screen
+; then checks if console is SGB
+; and issues an error message in case it is
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_CARD_POP
+	lb bc, 0, 0
+	call LoadScene
+	ld hl, $018a ; ldtx hl, AreYouBothReadyToCardPopText
+	call PrintScrollableText_NoTextBoxLabel
+	call RestoreVBlankFunction
+	ld hl, $00dd ; ldtx hl, CardPopCannotBePlayedWithTheGameBoyText
+	ld a, [wConsole]
+	cp CONSOLE_SGB
+	jr z, .error
+
+; initiate the communications
+	call PauseSong
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_GAMEBOY_LINK_CONNECTING
+	lb bc, 0, 0
+	call LoadScene
+	ld hl, $018d ; ldtx hl, PositionGameBoyColorsAndPressAButtonText
+	call DrawWideTextBox_PrintText
+	call EnableLCD
+	call HandleCardPopCommunications
+	push af
+	push hl
+	call ClearRP
+	call RestoreVBlankFunction
 	pop hl
 	pop af
+	jr c, .error
+
+; show the received card detail page
+; and play the corresponding song
+	ld a, [wLoadedCard1ID]
+	call AddCardToCollectionAndUpdateAlbumProgress
+	ld hl, wLoadedCard1Name
+	ld a, [hli]
+	ld h, [hl]
+	ld l, a
+	call LoadTxRam2
+	ld a, PLAYER_TURN
+	ldh [hWhoseTurn], a
+	ld a, $5d ; SFX_5D
+	call PlaySFX
+.wait_sfx
+	call AssertSFXFinished
+	or a
+	jr nz, .wait_sfx
+	ld a, [wCardPopCardObtainSong]
+	call PlaySong
+	ld hl, $018e ; ldtx hl, ReceivedThroughCardPopText
+	bank1call _DisplayCardDetailScreen
+	call ResumeSong
+	lb de, $38, $9f
+	call SetupText
+	bank1call OpenCardPage_FromHand
+	ret
+
+.error
+; show Card Pop! error scene
+; and print text in hl
+	push hl
+	call ResumeSong
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_CARD_POP_ERROR
+	lb bc, 0, 0
+	call LoadScene
+	pop hl
+	call PrintScrollableText_NoTextBoxLabel
+	call RestoreVBlankFunction
+	ret
+
+; handles all communications to the other device to do Card Pop!
+; returns carry if Card Pop! is unsuccessful
+; and returns in hl the corresponding error text ID
+HandleCardPopCommunications:
+; copy CardPopNameList from SRAM to WRAM
+	call EnableSRAM
+	ld hl, sCardPopNameList
+	ld de, wCardPopNameList
+	ld bc, CARDPOP_NAME_LIST_SIZE
+	call CopyDataHLtoDE
+	call DisableSRAM
+
+	ld a, IRPARAM_CARD_POP
+	call InitIRCommunications
+.loop_request
+	call TryReceiveIRRequest ; receive request
+	jr nc, .execute_commands
+	bit 1, a
+	jr nz, .fail
+	call TrySendIRRequest ; send request
+	jr c, .loop_request
+
+; do the player name search, then transmit the result
+	call ExchangeIRCommunicationParameters
+	jr c, .fail
+	ld hl, wCardPopNameList
+	ld de, wOtherPlayerCardPopNameList
+	ld c, 0 ; $100 bytes = CARDPOP_NAME_LIST_SIZE
+	call RequestDataTransmissionThroughIR
+	jr c, .fail
+	call LookUpNameInCardPopNameList
+	ld hl, wCardPopNameSearchResult
+	ld de, wCardPopNameSearchResult
+	ld c, 1
+	call RequestDataReceivalThroughIR
+	jr c, .fail
+	call SetIRCommunicationErrorCode_NoError
+	jr c, .fail
+	call ExecuteReceivedIRCommands
+	jr c, .fail
+	jr .check_search_result
+
+.execute_commands
+; will receive commands to send card pop name list,
+; and to receive the result of the name list search
+	call ExecuteReceivedIRCommands
+	ld a, [wIRCommunicationErrorCode]
+	or a
+	jr nz, .fail
+	call RequestCloseIRCommunication
+	jr c, .fail
+
+.check_search_result
+	ld a, [wCardPopNameSearchResult]
+	or a
+	jr z, .success
+	; not $00, means the name was found in the list
+	ld hl, $018c ; ldtx hl, CannotCardPopWithFriendPreviouslyPoppedWithText
+	scf
+	ret
+
+.success
+	call DecideCardToReceiveFromCardPop
+
+; increment number of times Card Pop! was done
+; and write the other player's name to sCardPopNameList
+; the spot where this is written in the list is derived
+; from the lower nybble of sTotalCardPopsDone
+; that means that after 16 Card Pop!, the older
+; names start to get overwritten
+	call EnableSRAM
+	ld hl, sTotalCardPopsDone
+	ld a, [hl]
+	inc [hl]
+	and $0f
+	swap a ; *NAME_BUFFER_LENGTH
+	ld l, a
+	ld h, $0
+	ld de, sCardPopNameList
+	add hl, de
+	ld de, wNameBuffer
+	ld c, NAME_BUFFER_LENGTH
+.loop_write_name
+	ld a, [de]
+	inc de
+	ld [hli], a
+	dec c
+	jr nz, .loop_write_name
+	call DisableSRAM
+	or a
+	ret
+
+.fail
+	ld hl, $018b ; ldtx hl, ThePopWasntSuccessfulText
+	scf
+	ret
+
+; looks up the name in wNameBuffer in wCardPopNameList
+; used to know whether this save file has done Card Pop!
+; with the other player already
+; returns carry and wCardPopNameSearchResult = $ff if the name was found;
+; returns no carry and wCardPopNameSearchResult = $00 otherwise
+LookUpNameInCardPopNameList:
+; searches for other player's name in this game's name list
+	ld hl, wCardPopNameList
+	ld c, CARDPOP_NAME_LIST_MAX_ELEMS
+.loop_own_card_pop_name_list
+	push hl
+	ld de, wNameBuffer
+	call oLookUpNameInCardPopNameList.CompareNames
+	pop hl
+	jr nc, .found_name
+	ld de, NAME_BUFFER_LENGTH
+	add hl, de
+	dec c
+	jr nz, .loop_own_card_pop_name_list
+
+; name was not found in wCardPopNameList
+
+; searches for this player's name in the other game's name list
+; this is useless since it discards the result from the name comparisons
+; as a result this loop will always return no carry
+	call EnableSRAM
+	ld hl, wOtherPlayerCardPopNameList
+	ld c, CARDPOP_NAME_LIST_MAX_ELEMS
+.loop_other_card_pop_name_list
+	push hl
+	ld de, sPlayerName
+	call oLookUpNameInCardPopNameList.CompareNames ; discards result from comparison
+	pop hl
+	ld de, NAME_BUFFER_LENGTH
+	add hl, de
+	dec c
+	jr nz, .loop_other_card_pop_name_list
+	xor a
+	jr .no_carry
+
+.found_name
+	ld a, $ff
+	scf
+.no_carry
+	call DisableSRAM
+	ld [wCardPopNameSearchResult], a ; $00 if name was not found, $ff otherwise
+	ret
+
+
+IRHwisMissing::
+	push hl
+	call StopMusic
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_GAMEBOY_LINK_CONNECTING
+	lb bc, 0, 0
+	call LoadScene
+	call EnableLCD
+
+	call PlayCardPopSong
+	call RestoreVBlankFunction
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_GAMEBOY_LINK_NOT_CONNECTED
+	lb bc, 0, 0
+	call LoadScene
+	pop hl
+	call DrawWideTextBox_WaitForInput
+	call RestoreVBlankFunction
+	scf
+	ret
+
+MACRO IRHwSelect
+	ldh a, [hSRAMEnValue]
+	and a
+	jp z, o\1
+	ld a, [wConsole]
+	cp a, CONSOLE_CGB
+	jp z, \1
+ENDM
+
+n_SendCard::
+	IRHwSelect _SendCard
+	call Prepare_IRHwisMissingText ; ld hl, $019e
+	jp IRHwisMissing
+
+n_ReceiveCard::
+	IRHwSelect _ReceiveCard
+	call Prepare_IRHwisMissingText ; ld hl, $019f
+	jp IRHwisMissing
+
+n_SendDeckConfiguration::
+	IRHwSelect _SendDeckConfiguration
+	call Prepare_IRHwisMissingText ; ld hl, $01a0
+	jp IRHwisMissing
+
+n_ReceiveDeckConfiguration::
+	IRHwSelect _ReceiveDeckConfiguration
+	call Prepare_IRHwisMissingText ; ld hl, $01a1
+	jp IRHwisMissing
+
+n_DoCardPop::
+	IRHwSelect _DoCardPop
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_CARD_POP
+	lb bc, 0, 0
+	call LoadScene
+	ld hl, $018a ; ldtx hl, AreYouBothReadyToCardPopText
+	call PrintScrollableText_NoTextBoxLabel
+	call RestoreVBlankFunction
+	call ResumeSong
+	call SetSpriteAnimationsAsVBlankFunction
+	ld a, SCENE_CARD_POP_ERROR
+	lb bc, 0, 0
+	call LoadScene
+	call Prepare_IRHwisMissingText ; ld hl, $018d
+	; call PrintScrollableText_NoTextBoxLabel
+	call DrawWideTextBox_WaitForInput
+	call RestoreVBlankFunction
+	ret
+
+Prepare_IRHwisMissingText:
+	push de
+	push bc
+	ld hl, IRHwisMissingText
+	ld de, wDefaultText
+	ld c, IRHwisMissingText.end - IRHwisMissingText
+.loop
+	ld a, [hli]
+	ld [de], a
+	inc de
+	dec c
+	jr nz, .loop
+	pop bc
+	pop de
+	ld hl, $0000
+	ret
+
+IRHwisMissingText:
+	db_w "找不到红外硬件支持，", $0a
+	db_w "无法使用该功能。"    , $00
+.end
+
+	org $7355, 1
+ReceiveDeckConfiguration:
+	farcall n_ReceiveDeckConfiguration
+	ret
+
+SendDeckConfiguration:
+	farcall n_SendDeckConfiguration
+	ret
+
+ReceiveCard:
+	farcall n_ReceiveCard
+	ret
+
+SendCard:
+	farcall n_SendCard
+	ret
+
+DoCardPop:
+	farcall n_DoCardPop
 	ret
