@@ -39,9 +39,16 @@ ASM := $(SRC_ASM) $(LIB_ASM) $(TEXT_ASM) $(FONT_ASM) $(POIN_ASM)
 OBJ := $(ASM:.asm=.o)
 2BPP := $(GFX_PNG:.png=.2bpp)
 
-ROM := output.gbc
-MAP := $(ROM:.gbc=.map)
-SYM := $(ROM:.gbc=.sym)
+ROM_HUC1 := output.gbc
+ROM_MBCx := output-mbc.gbc
+MAP_HUC1 := $(ROM_HUC1:.gbc=.map)
+MAP_MBCx := $(ROM_MBCx:.gbc=.map)
+SYM_HUC1 := $(ROM_HUC1:.gbc=.sym)
+SYM_MBCx := $(ROM_MBCx:.gbc=.sym)
+
+ROM := $(ROM_HUC1) $(ROM_MBCx)
+MAP := $(MAP_HUC1) $(MAP_MBCx)
+SYM := $(SYM_HUC1) $(SYM_MBCx)
 
 all: $(ROM)
 
@@ -63,9 +70,13 @@ $(POIN_ASM): textgen
 
 $(FONT_ASM): pixgen
 
-$(ROM): $(BASEROM) $(OBJ)
-	$(RGBLINK) -n $(SYM) -m $(MAP) -o $@ -O $^
+$(ROM_HUC1): $(BASEROM) $(OBJ)
+	$(RGBLINK) -n $(SYM_HUC1) -m $(MAP_HUC1) -o $@ -O $^
 	$(RGBFIX) -p 0x00 -v $@
+
+$(ROM_MBCx): $(BASEROM) $(OBJ)
+	$(RGBLINK) -n $(SYM_MBCx) -m $(MAP_MBCx) -o $@ -O $^
+	$(RGBFIX) -p 0x00 -m 0x1b -v $@
 
 %.o: %.asm $(INC_ASM) $(LIB_ASM) $(TEXT_ASM) $(2BPP)
 	$(RGBASM) -o $@ $<
