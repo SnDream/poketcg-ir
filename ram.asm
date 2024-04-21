@@ -6,5 +6,8 @@ include "include/charmap_w.inc"
 
 ; 可以在这个目录中定义自己使用的变量位置。也可以直接在patch.asm里编写
 
-	org $BFFF
-CartridgeDetect:: db
+	org $bfff
+wCartridgeDetect:: db
+
+	org $ffef
+hCartridgeType:: db

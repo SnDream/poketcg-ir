@@ -4,3 +4,10 @@ include "include/overlay.inc"
 
 	org $ff81
 ohSRAMBank:: db
+
+	org $c8f4
+wConsole::
+	ds $1
+
+	org $ce22
+wIRDataBuffer:: ds $8
