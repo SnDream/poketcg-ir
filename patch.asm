@@ -31,6 +31,7 @@ CartridgeDetect::
 	ld a, CART_IR_ENABLE
 	ld [rRAMG], a
 	call SRAMWriteTest
+	ld [hl], 0
 	jr z, .broken
 	xor a
 	ld [rRAMG], a
@@ -60,6 +61,10 @@ SRAMWriteTest::
 	ld [hl], a
 	cp a, [hl]
 	ret
+
+	org $0151
+InitHRAMStack_Patch::
+	ld sp, $fffd
 
 	org $0162
 InitSetSRAMBank_Patch::
